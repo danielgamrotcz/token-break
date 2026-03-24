@@ -1,0 +1,150 @@
+---
+import "../styles/global.css";
+import { activities } from "../data/activities";
+---
+
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content="Vyčerpal jsi tokeny v Claude Code? Tady je něco lepšího." />
+    <meta property="og:title" content="Token Break" />
+    <meta property="og:description" content="Generátor náhradních aktivit pro lidi, kterým Claude řekl dost." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <title>Token Break</title>
+  </head>
+  <body class="flex min-h-dvh flex-col items-center justify-center px-4 py-8">
+    <div class="w-full max-w-xl text-center">
+      <!-- Header -->
+      <div class="mb-12">
+        <h1 class="mb-3 text-4xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-5xl">
+          Token Break
+        </h1>
+        <p class="text-lg text-[var(--color-text-muted)]">
+          Claude potřebuje pauzu. Ty taky.
+        </p>
+      </div>
+
+      <!-- Activity Card -->
+      <div
+        id="card"
+        class="relative mb-8 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-8 backdrop-blur-[12px] transition-all duration-300 sm:p-10"
+      >
+        <div class="mb-4 flex items-center justify-center gap-2">
+          <span
+            id="category-badge"
+            class="rounded-full bg-[var(--color-accent)]/10 px-3 py-1 text-xs font-medium text-[var(--color-accent)]"
+          ></span>
+        </div>
+        <p
+          id="activity-text"
+          class="text-xl leading-relaxed font-medium text-[var(--color-text-primary)] sm:text-2xl"
+        ></p>
+      </div>
+
+      <!-- Button -->
+      <button
+        id="generate-btn"
+        class="group relative inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[var(--color-accent)] px-8 py-4 text-lg font-semibold text-white transition-all duration-200 hover:bg-[var(--color-accent-hover)] hover:shadow-[0_0_30px_var(--color-accent-glow)] active:scale-95"
+      >
+        <svg class="h-5 w-5 transition-transform duration-200 group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span id="btn-text">Co budu dělat?</span>
+      </button>
+
+      <!-- Counter -->
+      <p id="counter" class="mt-6 text-sm text-[var(--color-text-muted)] opacity-0 transition-opacity duration-300"></p>
+
+      <!-- Footer -->
+      <footer class="mt-16 text-xs text-[var(--color-text-muted)]">
+        <p>305 aktivit, co lidi dělali, než existovalo AI.</p>
+        <p class="mt-1 opacity-50">Vyrobil Daniel Gamrot. V&nbsp;čase, kdy mu taky došly tokeny.</p>
+      </footer>
+    </div>
+
+    <script define:vars={{ activitiesData: activities }}>
+      const categoryLabels = {
+        pohyb: "Pohyb",
+        kreativita: "Kreativita",
+        dobrodruzstvi: "Dobrodružství",
+        relax: "Relax",
+        spolecnost: "Společnost",
+        nostalgie: "Nostalgie",
+      };
+
+      const card = document.getElementById("card");
+      const activityText = document.getElementById("activity-text");
+      const categoryBadge = document.getElementById("category-badge");
+      const generateBtn = document.getElementById("generate-btn");
+      const btnText = document.getElementById("btn-text");
+      const counter = document.getElementById("counter");
+
+      let count = 0;
+      let lastIndex = -1;
+      const activities = activitiesData;
+
+      function getRandomActivity() {
+        let index;
+        do {
+          index = Math.floor(Math.random() * activities.length);
+        } while (index === lastIndex && activities.length > 1);
+        lastIndex = index;
+        return activities[index];
+      }
+
+      function showActivity() {
+        const activity = getRandomActivity();
+        count++;
+
+        // Fade out
+        card.style.opacity = "0";
+        card.style.transform = "translateY(8px)";
+
+        setTimeout(() => {
+          activityText.textContent = activity.text;
+          categoryBadge.textContent = categoryLabels[activity.category];
+
+          // Fade in
+          card.style.opacity = "1";
+          card.style.transform = "translateY(0)";
+
+          // Update button text after first click
+          if (count === 1) {
+            btnText.textContent = "Další!";
+          } else if (count === 10) {
+            btnText.textContent = "Ještě!";
+          } else if (count === 25) {
+            btnText.textContent = "Furt ještě?";
+          } else if (count === 50) {
+            btnText.textContent = "Hele, jdi radši ven.";
+          } else if (count === 100) {
+            btnText.textContent = "OK, ty fakt nemáš co dělat.";
+          }
+
+          // Show counter
+          if (count > 1) {
+            counter.textContent = `${count}× generováno. Zatím 0 splněno. (Asi.)`;
+            counter.style.opacity = "1";
+          }
+        }, 150);
+      }
+
+      // Init with first activity
+      showActivity();
+
+      generateBtn.addEventListener("click", showActivity);
+
+      // Keyboard shortcut
+      document.addEventListener("keydown", (e) => {
+        if (e.code === "Space" || e.key === "Enter") {
+          e.preventDefault();
+          showActivity();
+        }
+      });
+    </script>
+  </body>
+</html>
